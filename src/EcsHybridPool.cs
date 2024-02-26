@@ -26,6 +26,7 @@ namespace DCFApixels.DragonECS
         private List<IEcsPoolEventListener> _listeners = new List<IEcsPoolEventListener>();
 
         private EcsWorld.PoolsMediator _mediator;
+        private HybridGraph _graph;
 
         #region Properites
         public int Count
@@ -90,9 +91,9 @@ namespace DCFApixels.DragonECS
         }
         public void Add(int entityID, T component)
         {
-            HybridMapping mapping = _source.GetHybridMapping(component.GetType());
-            mapping.GetTargetTypePool().AddRefInternal(entityID, component, true);
-            foreach (var pool in mapping.GetPools())
+            HybridBranch branch = _graph.GetHybridMapping(component.GetType());
+            branch.GetTargetTypePool().AddRefInternal(entityID, component, true);
+            foreach (var pool in branch.GetPools())
             {
                 pool.AddRefInternal(entityID, component, false);
             }
@@ -156,9 +157,9 @@ namespace DCFApixels.DragonECS
         public void Del(int entityID)
         {
             var component = Get(entityID);
-            HybridMapping mapping = _source.GetHybridMapping(component.GetType());
-            mapping.GetTargetTypePool().DelInternal(entityID, true);
-            foreach (var pool in mapping.GetPools())
+            HybridBranch branch = _graph.GetHybridMapping(component.GetType());
+            branch.GetTargetTypePool().DelInternal(entityID, true);
+            foreach (var pool in branch.GetPools())
             {
                 pool.DelInternal(entityID, false);
             }
@@ -210,6 +211,9 @@ namespace DCFApixels.DragonECS
             _items = new T[capacity];
             _entities = new int[capacity];
             _itemsCount = 0;
+
+            _graph = _source.Get<HybridGraphCmp>().Graph;
+
         }
         void IEcsPoolImplementation.OnWorldResize(int newSize)
         {
@@ -219,7 +223,9 @@ namespace DCFApixels.DragonECS
         void IEcsPoolImplementation.OnReleaseDelEntityBuffer(ReadOnlySpan<int> buffer)
         {
             foreach (var entityID in buffer)
+            {
                 TryDel(entityID);
+            }
         }
         #endregion
 
@@ -316,21 +322,42 @@ namespace DCFApixels.DragonECS
         }
     }
 
-    public partial class EcsWorld
+    internal readonly struct HybridGraphCmp : IEcsWorldComponent<HybridGraphCmp>
     {
-        private Dictionary<Type, HybridMapping> _hybridMapping = new Dictionary<Type, HybridMapping>();
-        internal HybridMapping GetHybridMapping(Type type)
+        public readonly HybridGraph Graph;
+        public HybridGraphCmp(EcsWorld world)
         {
-            if (!_hybridMapping.TryGetValue(type, out HybridMapping mapping))
+            Graph = new HybridGraph(world);
+        }
+        public void Init(ref HybridGraphCmp component, EcsWorld world)
+        {
+            component = new HybridGraphCmp(world);
+        }
+        public void OnDestroy(ref HybridGraphCmp component, EcsWorld world)
+        {
+            component = default;
+        }
+    }
+
+    internal class HybridGraph
+    {
+        private readonly EcsWorld _world;
+        private readonly Dictionary<Type, HybridBranch> _hybridMapping = new Dictionary<Type, HybridBranch>();
+        public HybridGraph(EcsWorld world)
+        {
+            _world = world;
+        }
+        internal HybridBranch GetHybridMapping(Type type)
+        {
+            if (!_hybridMapping.TryGetValue(type, out HybridBranch mapping))
             {
-                mapping = new HybridMapping(this, type);
+                mapping = new HybridBranch(_world, type);
                 _hybridMapping.Add(type, mapping);
             }
             return mapping;
         }
     }
-
-    internal class HybridMapping
+    internal class HybridBranch
     {
         private EcsWorld _source;
         private object[] _sourceForReflection;
@@ -343,7 +370,7 @@ namespace DCFApixels.DragonECS
         private static MethodInfo getHybridPoolMethod = typeof(EcsHybridPoolExtensions).GetMethod($"{nameof(EcsHybridPoolExtensions.GetPool)}", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
 
         private static HashSet<Type> _hybridComponents = new HashSet<Type>();
-        static HybridMapping()
+        static HybridBranch()
         {
             Type hybridComponentType = typeof(IEcsHybridComponent);
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
@@ -363,7 +390,7 @@ namespace DCFApixels.DragonECS
             return _hybridComponents.Contains(type);
         }
 
-        public HybridMapping(EcsWorld source, Type type)
+        public HybridBranch(EcsWorld source, Type type)
         {
             if (!type.IsClass)
                 throw new ArgumentException();
