@@ -1,0 +1,23 @@
+{
+    "name": "com.dcfa_pixels.dragonecs-threads",
+    "author": 
+    {
+        "name": "DCFApixels",
+        "url": "https://github.com/DCFApixels/DragonECS-Threads"
+    },
+    "displayName": "DragonECS-Hybrid",
+    "description": "Multithreading for DragonECS",
+    "unity": "2020.3",
+    "version": "0.2.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/DCFApixels/DragonECS-Threads.git"
+    },
+    "keywords":
+    [
+        "ecs",
+        "dragonecs",
+        "extension",
+        "add-on"
+    ]
+}
