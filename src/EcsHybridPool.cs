@@ -203,7 +203,7 @@ namespace DCFApixels.DragonECS
             _componentTypeID = componentTypeID;
             _maskBit = EcsMaskChunck.FromID(componentTypeID);
 
-            const int capacity = 512;//TODO заменить на значение из конфига
+            int capacity = world.Config.Get_PoolComponentsCapacity();
 
             _mapping = new int[world.Capacity];
             _recycledItems = new int[128];
