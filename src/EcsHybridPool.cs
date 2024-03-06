@@ -268,12 +268,12 @@ namespace DCFApixels.DragonECS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EcsHybridPool<T> GetPool<T>(this EcsWorld self) where T : class, IEcsHybridComponent
         {
-            return self.GetPool<EcsHybridPool<T>>();
+            return self.GetPoolInstance<EcsHybridPool<T>>();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EcsHybridPool<T> GetPoolUnchecked<T>(this EcsWorld self) where T : class, IEcsHybridComponent
         {
-            return self.GetPoolUnchecked<EcsHybridPool<T>>();
+            return self.GetPoolInstanceUnchecked<EcsHybridPool<T>>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -297,12 +297,12 @@ namespace DCFApixels.DragonECS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EcsHybridPool<T> GetHybridPool<T>(this EcsWorld self) where T : class, IEcsHybridComponent
         {
-            return self.GetPool<EcsHybridPool<T>>();
+            return self.GetPoolInstance<EcsHybridPool<T>>();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EcsHybridPool<T> GetHybridPoolUnchecked<T>(this EcsWorld self) where T : class, IEcsHybridComponent
         {
-            return self.GetPoolUnchecked<EcsHybridPool<T>>();
+            return self.GetPoolInstanceUnchecked<EcsHybridPool<T>>();
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
