@@ -18,10 +18,10 @@ namespace DCFApixels.DragonECS
         private int[] _mapping;// index = entityID / value = itemIndex;/ value = 0 = no entityID
         private T[] _items; //dense
         private int[] _entities;
-        private int _itemsCount;
+        private int _itemsCount = 0;
 
         private int[] _recycledItems;
-        private int _recycledItemsCount;
+        private int _recycledItemsCount = 0;
 
         private List<IEcsPoolEventListener> _listeners = new List<IEcsPoolEventListener>();
 
@@ -203,14 +203,12 @@ namespace DCFApixels.DragonECS
             _componentTypeID = componentTypeID;
             _maskBit = EcsMaskChunck.FromID(componentTypeID);
 
-            int capacity = world.Config.Get_PoolComponentsCapacity();
+            int capacity = world.Configs.Get<EcsWorldConfig>().PoolComponentsCapacity;
 
             _mapping = new int[world.Capacity];
-            _recycledItems = new int[128];
-            _recycledItemsCount = 0;
             _items = new T[capacity];
             _entities = new int[capacity];
-            _itemsCount = 0;
+            _recycledItems = new int[world.Configs.Get<EcsWorldConfig>().PoolRecycledComponentsCapacity];
 
             _graph = _source.Get<HybridGraphCmp>().Graph;
 
