@@ -279,17 +279,17 @@ namespace DCFApixels.DragonECS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EcsHybridPool<T> Include<T>(this EcsAspect.Builder self) where T : class, IEcsHybridComponent
         {
-            return self.Include<EcsHybridPool<T>>();
+            return self.IncludePool<EcsHybridPool<T>>();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EcsHybridPool<T> Exclude<T>(this EcsAspect.Builder self) where T : class, IEcsHybridComponent
         {
-            return self.Exclude<EcsHybridPool<T>>();
+            return self.ExcludePool<EcsHybridPool<T>>();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EcsHybridPool<T> Optional<T>(this EcsAspect.Builder self) where T : class, IEcsHybridComponent
         {
-            return self.Optional<EcsHybridPool<T>>();
+            return self.OptionalPool<EcsHybridPool<T>>();
         }
 
         //-------------------------------------------------
@@ -308,17 +308,17 @@ namespace DCFApixels.DragonECS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EcsHybridPool<T> IncludeHybrid<T>(this EcsAspect.Builder self) where T : class, IEcsHybridComponent
         {
-            return self.Include<EcsHybridPool<T>>();
+            return self.IncludePool<EcsHybridPool<T>>();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EcsHybridPool<T> ExcludeHybrid<T>(this EcsAspect.Builder self) where T : class, IEcsHybridComponent
         {
-            return self.Exclude<EcsHybridPool<T>>();
+            return self.ExcludePool<EcsHybridPool<T>>();
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static EcsHybridPool<T> OptionalHybrid<T>(this EcsAspect.Builder self) where T : class, IEcsHybridComponent
         {
-            return self.Optional<EcsHybridPool<T>>();
+            return self.OptionalPool<EcsHybridPool<T>>();
         }
     }
 
