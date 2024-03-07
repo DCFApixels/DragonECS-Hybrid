@@ -203,12 +203,12 @@ namespace DCFApixels.DragonECS
             _componentTypeID = componentTypeID;
             _maskBit = EcsMaskChunck.FromID(componentTypeID);
 
-            int capacity = world.Configs.Get<EcsWorldConfig>().PoolComponentsCapacity;
+            int capacity = world.Configs.GetWorldConfigOrDefault().PoolComponentsCapacity;
 
             _mapping = new int[world.Capacity];
             _items = new T[capacity];
             _entities = new int[capacity];
-            _recycledItems = new int[world.Configs.Get<EcsWorldConfig>().PoolRecycledComponentsCapacity];
+            _recycledItems = new int[world.Configs.GetWorldConfigOrDefault().PoolRecycledComponentsCapacity];
 
             _graph = _source.Get<HybridGraphCmp>().Graph;
 
