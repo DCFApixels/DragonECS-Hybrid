@@ -1,17 +1,17 @@
 {
-    "name": "com.dcfa_pixels.dragonecs-threads",
+    "name": "com.dcfa_pixels.dragonecs-hybrid",
     "author": 
     {
         "name": "DCFApixels",
-        "url": "https://github.com/DCFApixels/DragonECS-Threads"
+        "url": "https://github.com/DCFApixels/DragonECS-Hybrid"
     },
     "displayName": "DragonECS-Hybrid",
-    "description": "Multithreading for DragonECS",
+    "description": "Hybrid extension for DragonECS",
     "unity": "2020.3",
     "version": "0.2.0",
     "repository": {
         "type": "git",
-        "url": "https://github.com/DCFApixels/DragonECS-Threads.git"
+        "url": "https://github.com/DCFApixels/DragonECS-Hybrid.git"
     },
     "keywords":
     [
