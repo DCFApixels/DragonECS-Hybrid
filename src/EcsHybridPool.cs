@@ -193,6 +193,15 @@ namespace DCFApixels.DragonECS
                 }
             }
         }
+
+        public void ClearAll()
+        {
+            var span = _source.Where(out SingleAspect<EcsHybridPool<T>> _);
+            foreach (var entityID in span)
+            {
+                Del(entityID);
+            }
+        }
         #endregion
 
         #region Callbacks
