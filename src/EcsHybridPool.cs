@@ -259,6 +259,12 @@ namespace DCFApixels.DragonECS
         IEnumerator<T> IEnumerable<T>.GetEnumerator() => throw new NotImplementedException();
         IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
         #endregion
+
+        #region MarkersConverter
+        public static implicit operator EcsHybridPool<T>(IncludeMarker a) { return a.GetInstance<EcsHybridPool<T>>(); }
+        public static implicit operator EcsHybridPool<T>(ExcludeMarker a) { return a.GetInstance<EcsHybridPool<T>>(); }
+        public static implicit operator EcsHybridPool<T>(OptionalMarker a) { return a.GetInstance<EcsHybridPool<T>>(); }
+        #endregion
     }
     /// <summary>Hybrid component</summary>
     public interface IEcsHybridComponent
