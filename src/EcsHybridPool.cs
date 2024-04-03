@@ -400,6 +400,10 @@ namespace DCFApixels.DragonECS
         }
         public static bool IsEcsHybridComponentType(Type type)
         {
+            if (type.IsGenericType)
+            {
+                type = type.GetGenericTypeDefinition();
+            }
             return _hybridComponents.Contains(type);
         }
 
