@@ -8,6 +8,20 @@ using System.Runtime.CompilerServices;
 
 namespace DCFApixels.DragonECS
 {
+    /// <summary>Hybrid component</summary>
+    public interface IEcsHybridComponent
+    {
+        bool IsAlive { get; }
+        void OnAddToPool(entlong entity);
+        void OnDelFromPool(entlong entity);
+    }
+
+#if ENABLE_IL2CPP
+    using Unity.IL2CPP.CompilerServices;
+    [Il2CppSetOption (Option.NullChecks, false)]
+#endif
+    [MetaColor(MetaColor.DragonRose)]
+    [MetaGroup(EcsConsts.FRAMEWORK_NAME)]
     /// <summary>Pool for IEcsHybridComponent components</summary>
     public sealed class EcsHybridPool<T> : IEcsPoolImplementation<T>, IEcsHybridPool<T>, IEcsHybridPoolInternal, IEnumerable<T> //IEnumerable<T> - IntelliSense hack
         where T : class, IEcsHybridComponent
@@ -267,13 +281,6 @@ namespace DCFApixels.DragonECS
         public static implicit operator EcsHybridPool<T>(OptionalMarker a) { return a.GetInstance<EcsHybridPool<T>>(); }
         #endregion
     }
-    /// <summary>Hybrid component</summary>
-    public interface IEcsHybridComponent
-    {
-        bool IsAlive { get; }
-        void OnAddToPool(entlong entity);
-        void OnDelFromPool(entlong entity);
-    }
     public static class EcsHybridPoolExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -456,3 +463,31 @@ namespace DCFApixels.DragonECS.Internal
         void DelInternal(int entityID, bool isMain);
     }
 }
+
+
+
+
+#if ENABLE_IL2CPP
+// Unity IL2CPP performance optimization attribute.
+namespace Unity.IL2CPP.CompilerServices 
+{
+    using System;
+    internal enum Option 
+    {
+        NullChecks = 1,
+        ArrayBoundsChecks = 2,
+        DivideByZeroChecks = 3,
+    }
+    [AttributeUsage(AttributeTargets.Assembly | AttributeTargets.Struct | AttributeTargets.Class | AttributeTargets.Method | AttributeTargets.Property | AttributeTargets.Delegate, Inherited = false, AllowMultiple = true)]
+    internal class Il2CppSetOptionAttribute : Attribute
+    {
+        public Option Option { get; private set; }
+        public object Value { get; private set; }
+        public Il2CppSetOptionAttribute(Option option, object value)
+        {
+            Option = option;
+            Value = value;
+        }
+    }
+}
+#endif
