@@ -1,4 +1,5 @@
 using DCFApixels.DragonECS.Internal;
+using DCFApixels.DragonECS.PoolsCore;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,6 +8,16 @@ using System.Runtime.CompilerServices;
 
 namespace DCFApixels.DragonECS
 {
+    /// <summary>Hybrid component</summary>
+    public interface IEcsHybridComponent
+    {
+        bool IsAlive { get; }
+        void OnAddToPool(entlong entity);
+        void OnDelFromPool(entlong entity);
+    }
+
+    [MetaColor(MetaColor.DragonRose)]
+    [MetaGroup(EcsConsts.FRAMEWORK_NAME)]
     /// <summary>Pool for IEcsHybridComponent components</summary>
     public sealed class EcsHybridPool<T> : IEcsPoolImplementation<T>, IEcsHybridPool<T>, IEcsHybridPoolInternal, IEnumerable<T> //IEnumerable<T> - IntelliSense hack
         where T : class, IEcsHybridComponent
@@ -266,13 +277,6 @@ namespace DCFApixels.DragonECS
         public static implicit operator EcsHybridPool<T>(OptionalMarker a) { return a.GetInstance<EcsHybridPool<T>>(); }
         #endregion
     }
-    /// <summary>Hybrid component</summary>
-    public interface IEcsHybridComponent
-    {
-        bool IsAlive { get; }
-        void OnAddToPool(entlong entity);
-        void OnDelFromPool(entlong entity);
-    }
     public static class EcsHybridPoolExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -400,6 +404,10 @@ namespace DCFApixels.DragonECS
         }
         public static bool IsEcsHybridComponentType(Type type)
         {
+            if (type.IsGenericType)
+            {
+                type = type.GetGenericTypeDefinition();
+            }
             return _hybridComponents.Contains(type);
         }
 
