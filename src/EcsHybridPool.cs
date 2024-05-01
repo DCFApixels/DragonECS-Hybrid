@@ -34,7 +34,9 @@ namespace DCFApixels.DragonECS
         private int[] _recycledItems;
         private int _recycledItemsCount = 0;
 
+#if !DISABLE_POOLS_EVENTS
         private List<IEcsPoolEventListener> _listeners = new List<IEcsPoolEventListener>();
+#endif
 
         private EcsWorld.PoolsMediator _mediator;
         private HybridGraph _graph;
@@ -92,7 +94,9 @@ namespace DCFApixels.DragonECS
                 }
             }
             _mediator.RegisterComponent(entityID, _componentTypeID, _maskBit);
+#if !DISABLE_POOLS_EVENTS
             _listeners.InvokeOnAdd(entityID);
+#endif
             if (isMain)
             {
                 component.OnAddToPool(_source.GetEntityLong(entityID));
@@ -123,7 +127,9 @@ namespace DCFApixels.DragonECS
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (!Has(entityID)) EcsPoolThrowHalper.ThrowNotHaveComponent<T>(entityID);
 #endif
+#if !DISABLE_POOLS_EVENTS
             _listeners.InvokeOnGet(entityID);
+#endif
             return _items[_mapping[entityID]];
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -163,7 +169,9 @@ namespace DCFApixels.DragonECS
             _entities[itemIndex] = 0;
             _itemsCount--;
             _mediator.UnregisterComponent(entityID, _componentTypeID, _maskBit);
+#if !DISABLE_POOLS_EVENTS
             _listeners.InvokeOnDel(entityID);
+#endif
         }
         public void Del(int entityID)
         {
@@ -213,7 +221,7 @@ namespace DCFApixels.DragonECS
                 Del(entityID);
             }
         }
-        #endregion
+#endregion
 
         #region Callbacks
         void IEcsPoolImplementation.OnInit(EcsWorld world, EcsWorld.PoolsMediator mediator, int componentTypeID)
@@ -254,6 +262,7 @@ namespace DCFApixels.DragonECS
         #endregion
 
         #region Listeners
+#if !DISABLE_POOLS_EVENTS
         public void AddListener(IEcsPoolEventListener listener)
         {
             if (listener == null) { throw new ArgumentNullException("listener is null"); }
@@ -264,6 +273,7 @@ namespace DCFApixels.DragonECS
             if (listener == null) { throw new ArgumentNullException("listener is null"); }
             _listeners.Remove(listener);
         }
+#endif
         #endregion
 
         #region IEnumerator - IntelliSense hack
