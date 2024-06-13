@@ -1,3 +1,4 @@
+using DCFApixels.DragonECS.Hybrid;
 using DCFApixels.DragonECS.Internal;
 using DCFApixels.DragonECS.PoolsCore;
 using System;
@@ -8,7 +9,10 @@ using System.Runtime.CompilerServices;
 
 namespace DCFApixels.DragonECS
 {
-    /// <summary>Hybrid component</summary>
+    /// <summary> Hybrid component. </summary>
+    [MetaColor(MetaColor.DragonRose)]
+    [MetaGroup(EcsHybridConsts.PACK_GROUP, EcsConsts.POOLS_GROUP)]
+    [MetaDescription(EcsConsts.AUTHOR, "Hybrid component.")]
     public interface IEcsHybridComponent
     {
         bool IsAlive { get; }
@@ -16,9 +20,10 @@ namespace DCFApixels.DragonECS
         void OnDelFromPool(entlong entity);
     }
 
+    /// <summary> Pool for IEcsHybridComponent components. </summary>
     [MetaColor(MetaColor.DragonRose)]
-    [MetaGroup(EcsConsts.FRAMEWORK_NAME)]
-    /// <summary>Pool for IEcsHybridComponent components</summary>
+    [MetaGroup(EcsHybridConsts.PACK_GROUP, EcsConsts.POOLS_GROUP)]
+    [MetaDescription(EcsConsts.AUTHOR, "Pool for IEcsHybridComponent components.")]
     public sealed class EcsHybridPool<T> : IEcsPoolImplementation<T>, IEcsHybridPool<T>, IEcsHybridPoolInternal, IEnumerable<T> //IEnumerable<T> - IntelliSense hack
         where T : class, IEcsHybridComponent
     {
@@ -221,7 +226,7 @@ namespace DCFApixels.DragonECS
                 Del(entityID);
             }
         }
-#endregion
+        #endregion
 
         #region Callbacks
         void IEcsPoolImplementation.OnInit(EcsWorld world, EcsWorld.PoolsMediator mediator, int componentTypeID)
