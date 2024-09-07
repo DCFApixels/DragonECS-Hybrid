@@ -261,9 +261,9 @@ namespace DCFApixels.DragonECS
         #endregion
 
         #region Other
-        void IEcsPool.AddRaw(int entityID, object dataRaw) => Add(entityID, (T)dataRaw);
-        object IEcsReadonlyPool.GetRaw(int entityID) => Read(entityID);
-        void IEcsPool.SetRaw(int entityID, object dataRaw) => Set(entityID, (T)dataRaw);
+        void IEcsPool.AddRaw(int entityID, object dataRaw) { Add(entityID, (T)dataRaw); }
+        object IEcsReadonlyPool.GetRaw(int entityID) { return Get(entityID); }
+        void IEcsPool.SetRaw(int entityID, object dataRaw) { Set(entityID, (T)dataRaw); }
         #endregion
 
         #region Listeners
@@ -282,8 +282,8 @@ namespace DCFApixels.DragonECS
         #endregion
 
         #region IEnumerator - IntelliSense hack
-        IEnumerator<T> IEnumerable<T>.GetEnumerator() => throw new NotImplementedException();
-        IEnumerator IEnumerable.GetEnumerator() => throw new NotImplementedException();
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() { throw new NotImplementedException(); }
+        IEnumerator IEnumerable.GetEnumerator() { throw new NotImplementedException(); }
         #endregion
 
         #region MarkersConverter
