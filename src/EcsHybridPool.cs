@@ -42,6 +42,7 @@ namespace DCFApixels.DragonECS
 #if !DISABLE_POOLS_EVENTS
         private List<IEcsPoolEventListener> _listeners = new List<IEcsPoolEventListener>();
 #endif
+        private bool _isLocked;
 
         private EcsWorld.PoolsMediator _mediator;
         private HybridGraph _graph;
@@ -80,6 +81,10 @@ namespace DCFApixels.DragonECS
         }
         private void AddInternal(int entityID, T component, bool isMain)
         {
+#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+            if (_isLocked) { EcsPoolThrowHalper.ThrowPoolLocked(); }
+#endif
+
             ref int itemIndex = ref _mapping[entityID];
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (itemIndex > 0) EcsPoolThrowHalper.ThrowAlreadyHasComponent<T>(entityID);
@@ -111,6 +116,9 @@ namespace DCFApixels.DragonECS
         }
         public void Add(int entityID, T component)
         {
+#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+            if (_isLocked) { EcsPoolThrowHalper.ThrowPoolLocked(); }
+#endif
             HybridBranch branch = _graph.GetHybridMapping(component.GetType());
             branch.GetTargetTypePool().AddRefInternal(entityID, component, true);
             foreach (var pool in branch.GetPools())
@@ -158,6 +166,7 @@ namespace DCFApixels.DragonECS
         {
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (!Has(entityID)) EcsPoolThrowHalper.ThrowNotHaveComponent<T>(entityID);
+            if (_isLocked) { EcsPoolThrowHalper.ThrowPoolLocked(); }
 #endif
             ref int itemIndex = ref _mapping[entityID];
             T component = _items[itemIndex];
@@ -209,6 +218,9 @@ namespace DCFApixels.DragonECS
 
         public void ClearNotAliveComponents()
         {
+#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+            if (_isLocked) { EcsPoolThrowHalper.ThrowPoolLocked(); }
+#endif
             for (int i = _itemsCount - 1; i >= 0; i--)
             {
                 if (!_items[i].IsAlive)
@@ -220,6 +232,9 @@ namespace DCFApixels.DragonECS
 
         public void ClearAll()
         {
+#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+            if (_isLocked) { EcsPoolThrowHalper.ThrowPoolLocked(); }
+#endif
             var span = _source.Where(out SingleAspect<EcsHybridPool<T>> _);
             foreach (var entityID in span)
             {
@@ -258,6 +273,7 @@ namespace DCFApixels.DragonECS
                 TryDel(entityID);
             }
         }
+        void IEcsPoolImplementation.OnLockedChanged_Debug(bool locked) { _isLocked = locked; }
         #endregion
 
         #region Other
