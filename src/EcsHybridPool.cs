@@ -82,12 +82,12 @@ namespace DCFApixels.DragonECS
         private void AddInternal(int entityID, T component, bool isMain)
         {
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
-            if (_isLocked) { EcsPoolThrowHalper.ThrowPoolLocked(); }
+            if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
 
             ref int itemIndex = ref _mapping[entityID];
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
-            if (itemIndex > 0) EcsPoolThrowHalper.ThrowAlreadyHasComponent<T>(entityID);
+            if (itemIndex > 0) EcsPoolThrowHelper.ThrowAlreadyHasComponent<T>(entityID);
 #endif
             if (_recycledItemsCount > 0)
             {
@@ -117,7 +117,7 @@ namespace DCFApixels.DragonECS
         public void Add(int entityID, T component)
         {
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
-            if (_isLocked) { EcsPoolThrowHalper.ThrowPoolLocked(); }
+            if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
             HybridBranch branch = _graph.GetHybridMapping(component.GetType());
             branch.GetTargetTypePool().AddRefInternal(entityID, component, true);
@@ -138,7 +138,7 @@ namespace DCFApixels.DragonECS
         public T Get(int entityID)
         {
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
-            if (!Has(entityID)) EcsPoolThrowHalper.ThrowNotHaveComponent<T>(entityID);
+            if (!Has(entityID)) EcsPoolThrowHelper.ThrowNotHaveComponent<T>(entityID);
 #endif
 #if !DISABLE_POOLS_EVENTS
             _listeners.InvokeOnGet(entityID);
@@ -149,7 +149,7 @@ namespace DCFApixels.DragonECS
         public ref readonly T Read(int entityID)
         {
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
-            if (!Has(entityID)) EcsPoolThrowHalper.ThrowNotHaveComponent<T>(entityID);
+            if (!Has(entityID)) EcsPoolThrowHelper.ThrowNotHaveComponent<T>(entityID);
 #endif
             return ref _items[_mapping[entityID]];
         }
@@ -165,8 +165,8 @@ namespace DCFApixels.DragonECS
         private void DelInternal(int entityID, bool isMain)
         {
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
-            if (!Has(entityID)) EcsPoolThrowHalper.ThrowNotHaveComponent<T>(entityID);
-            if (_isLocked) { EcsPoolThrowHalper.ThrowPoolLocked(); }
+            if (!Has(entityID)) EcsPoolThrowHelper.ThrowNotHaveComponent<T>(entityID);
+            if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
             ref int itemIndex = ref _mapping[entityID];
             T component = _items[itemIndex];
@@ -204,14 +204,14 @@ namespace DCFApixels.DragonECS
         public void Copy(int fromEntityID, int toEntityID)
         {
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
-            if (!Has(fromEntityID)) EcsPoolThrowHalper.ThrowNotHaveComponent<T>(fromEntityID);
+            if (!Has(fromEntityID)) EcsPoolThrowHelper.ThrowNotHaveComponent<T>(fromEntityID);
 #endif
             Set(toEntityID, Get(fromEntityID));
         }
         public void Copy(int fromEntityID, EcsWorld toWorld, int toEntityID)
         {
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
-            if (!Has(fromEntityID)) EcsPoolThrowHalper.ThrowNotHaveComponent<T>(fromEntityID);
+            if (!Has(fromEntityID)) EcsPoolThrowHelper.ThrowNotHaveComponent<T>(fromEntityID);
 #endif
             toWorld.GetPool<T>().Set(toEntityID, Get(fromEntityID));
         }
@@ -219,7 +219,7 @@ namespace DCFApixels.DragonECS
         public void ClearNotAliveComponents()
         {
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
-            if (_isLocked) { EcsPoolThrowHalper.ThrowPoolLocked(); }
+            if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
             for (int i = _itemsCount - 1; i >= 0; i--)
             {
@@ -233,7 +233,7 @@ namespace DCFApixels.DragonECS
         public void ClearAll()
         {
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
-            if (_isLocked) { EcsPoolThrowHalper.ThrowPoolLocked(); }
+            if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
             var span = _source.Where(out SingleAspect<EcsHybridPool<T>> _);
             foreach (var entityID in span)
