@@ -277,6 +277,12 @@ namespace DCFApixels.DragonECS
         #endregion
 
         #region Other
+        void IEcsPool.AddEmpty(int entityID)
+        {
+#if DEBUG
+            EcsDebug.PrintWarning("AddEmpty is not supported for EcsHybridPool.");
+#endif
+        }
         void IEcsPool.AddRaw(int entityID, object dataRaw) { Add(entityID, (T)dataRaw); }
         object IEcsReadonlyPool.GetRaw(int entityID) { return Get(entityID); }
         void IEcsPool.SetRaw(int entityID, object dataRaw) { Set(entityID, (T)dataRaw); }
