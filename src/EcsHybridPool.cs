@@ -5,7 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Reflection;
+using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
 namespace DCFApixels.DragonECS
@@ -14,6 +14,7 @@ namespace DCFApixels.DragonECS
     [MetaColor(MetaColor.DragonRose)]
     [MetaGroup(EcsHybridConsts.PACK_GROUP, EcsConsts.POOLS_GROUP)]
     [MetaDescription(EcsConsts.AUTHOR, "Hybrid component.")]
+    [MetaID("2EBB343694014EC74A02E802E36B8D68")]
     public interface IEcsHybridComponent
     {
         bool IsAlive { get; }
@@ -25,6 +26,8 @@ namespace DCFApixels.DragonECS
     [MetaColor(MetaColor.DragonRose)]
     [MetaGroup(EcsHybridConsts.PACK_GROUP, EcsConsts.POOLS_GROUP)]
     [MetaDescription(EcsConsts.AUTHOR, "Pool for IEcsHybridComponent components.")]
+    [MetaID("4ACF343694012D56DB73D5FA50DCAA75")]
+    [DebuggerDisplay("Count: {Count}")]
     public sealed class EcsHybridPool<T> : IEcsPoolImplementation<T>, IEcsHybridPool<T>, IEcsHybridPoolInternal, IEnumerable<T> //IEnumerable<T> - IntelliSense hack
         where T : class, IEcsHybridComponent
     {
@@ -76,19 +79,13 @@ namespace DCFApixels.DragonECS
         #endregion
 
         #region Methods
-        void IEcsHybridPoolInternal.AddRefInternal(int entityID, object component, bool isMain)
+        void IEcsHybridPoolInternal.AddRefInternal(int entityID, object component, bool isBranchRoot)
         {
-            AddInternal(entityID, (T)component, isMain);
-        }
-        private void AddInternal(int entityID, T component, bool isMain)
-        {
-#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
-            if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
-#endif
-
+            T cmp = (T)component;
             ref int itemIndex = ref _mapping[entityID];
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (itemIndex > 0) EcsPoolThrowHelper.ThrowAlreadyHasComponent<T>(entityID);
+            if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
             if (_recycledItemsCount > 0)
             {
@@ -108,11 +105,11 @@ namespace DCFApixels.DragonECS
 #if !DISABLE_POOLS_EVENTS
             _listeners.InvokeOnAdd(entityID);
 #endif
-            if (isMain)
+            if (isBranchRoot)
             {
-                component.OnAddToPool(_source.GetEntityLong(entityID));
+                cmp.OnAddToPool(_source.GetEntityLong(entityID));
             }
-            _items[itemIndex] = component;
+            _items[itemIndex] = cmp;
             _entities[itemIndex] = entityID;
         }
         public void Add(int entityID, T component)
@@ -120,13 +117,14 @@ namespace DCFApixels.DragonECS
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
-            HybridBranch branch = _graph.GetHybridMapping(component.GetType());
-            branch.GetTargetTypePool().AddRefInternal(entityID, component, true);
-            foreach (var pool in branch.GetPools())
+            HybridBranch branch = _graph.GetBranch(component.GetType());
+            branch.TargetTypePool.AddRefInternal(entityID, component, true);
+            foreach (var pool in branch.GetRelatedTypePools())
             {
                 pool.AddRefInternal(entityID, component, false);
             }
         }
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int entityID, T component)
         {
             if (Has(entityID))
@@ -184,6 +182,7 @@ namespace DCFApixels.DragonECS
             _entities[itemIndex] = 0;
             _itemsCount--;
             _mediator.UnregisterComponent(entityID, _componentTypeID, _maskBit);
+            _graph.InitPool<T>();
 #if !DISABLE_POOLS_EVENTS
             _listeners.InvokeOnDel(entityID);
 #endif
@@ -191,9 +190,9 @@ namespace DCFApixels.DragonECS
         public void Del(int entityID)
         {
             var component = Get(entityID);
-            HybridBranch branch = _graph.GetHybridMapping(component.GetType());
-            branch.GetTargetTypePool().DelInternal(entityID, true);
-            foreach (var pool in branch.GetPools())
+            HybridBranch branch = _graph.GetBranch(component.GetType());
+            branch.TargetTypePool.DelInternal(entityID, true);
+            foreach (var pool in branch.GetRelatedTypePools())
             {
                 pool.DelInternal(entityID, false);
             }
@@ -286,6 +285,7 @@ namespace DCFApixels.DragonECS
         }
         void IEcsPool.AddRaw(int entityID, object dataRaw) { Add(entityID, (T)dataRaw); }
         object IEcsReadonlyPool.GetRaw(int entityID) { return Get(entityID); }
+        object IEcsHybridPoolInternal.GetRaw(int entityID) { return Get(entityID); }
         void IEcsPool.SetRaw(int entityID, object dataRaw) { Set(entityID, (T)dataRaw); }
         #endregion
 
@@ -437,94 +437,69 @@ namespace DCFApixels.DragonECS
     internal class HybridGraph
     {
         private readonly EcsWorld _world;
-        private readonly Dictionary<Type, HybridBranch> _hybridMapping = new Dictionary<Type, HybridBranch>();
+        private readonly Dictionary<Type, HybridBranch> _branches = new Dictionary<Type, HybridBranch>();
         public HybridGraph(EcsWorld world)
         {
             _world = world;
         }
-        internal HybridBranch GetHybridMapping(Type type)
+        internal HybridBranch GetBranch(Type componentType)
         {
-            if (!_hybridMapping.TryGetValue(type, out HybridBranch mapping))
+            if (!_branches.TryGetValue(componentType, out HybridBranch branch))
             {
-                mapping = new HybridBranch(_world, type);
-                _hybridMapping.Add(type, mapping);
+                branch = new HybridBranch(_world, componentType);
+                _branches.Add(componentType, branch);
             }
-            return mapping;
+            return branch;
         }
-    }
-    internal class HybridBranch
-    {
-        private EcsWorld _source;
-        private object[] _sourceForReflection;
-        private Type _type;
-
-        private IEcsHybridPoolInternal _targetTypePool;
-        private List<IEcsHybridPoolInternal> _relatedPools;
-
-        private static Type hybridPoolType = typeof(EcsHybridPool<>);
-        private static MethodInfo getHybridPoolMethod = typeof(EcsHybridPoolExtensions).GetMethod($"{nameof(EcsHybridPoolExtensions.GetPool)}", BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic);
-
-        private static HashSet<Type> _hybridComponents = new HashSet<Type>();
-        static HybridBranch()
+        public void InitPool<TComponent>() where TComponent : class, IEcsHybridComponent
         {
-            Type hybridComponentType = typeof(IEcsHybridComponent);
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
+            var pool = (IEcsHybridPoolInternal)_world.GetPoolInstance<EcsHybridPool<TComponent>>();
+
+            foreach (var pair in _branches)
             {
-                var types = assembly.GetTypes();
-                foreach (var type in types)
+                if (typeof(TComponent).IsAssignableFrom(pair.Key))
                 {
-                    if (type.GetInterface(nameof(IEcsHybridComponent)) != null && type != hybridComponentType)
+                    pair.Value.InitPool(pool);
+                }
+                if (pair.Key.IsAssignableFrom(typeof(TComponent)))
+                {
+                    foreach (var e in pair.Value.Mask.GetIterator().IterateOnlyInc(_world.Entities))
                     {
-                        _hybridComponents.Add(type);
+                        var cmp = pair.Value.TargetTypePool.GetRaw(e);
+                        pool.AddRefInternal(e, cmp, false);
                     }
                 }
             }
         }
-        public static bool IsEcsHybridComponentType(Type type)
-        {
-            if (type.IsGenericType)
-            {
-                type = type.GetGenericTypeDefinition();
-            }
-            return _hybridComponents.Contains(type);
-        }
+    }
+    // ветки создаются только на инстаниируемые типы
+    internal class HybridBranch
+    {
+        private readonly EcsWorld _source;
+        public readonly Type Type;
+        public readonly EcsMask Mask;
+        public IEcsHybridPoolInternal TargetTypePool;
+
+        private List<IEcsHybridPoolInternal> _relatedTypePools;
+
 
         public HybridBranch(EcsWorld source, Type type)
         {
-            if (!type.IsClass)
-                throw new ArgumentException();
+            if (!type.IsClass) { throw new ArgumentException(); }
 
             _source = source;
-            _type = type;
-            _relatedPools = new List<IEcsHybridPoolInternal>();
-            _sourceForReflection = new object[] { source };
-            _targetTypePool = CreateHybridPool(type);
-            foreach (var item in type.GetInterfaces())
-            {
-                if (IsEcsHybridComponentType(item))
-                {
-                    _relatedPools.Add(CreateHybridPool(item));
-                }
-            }
-            Type baseType = type.BaseType;
-            while (baseType != typeof(object) && IsEcsHybridComponentType(baseType))
-            {
-                _relatedPools.Add(CreateHybridPool(baseType));
-                baseType = baseType.BaseType;
-            }
+            Type = type;
+            Mask = EcsMask.New(source).Inc(type).Build();
+            _relatedTypePools = new List<IEcsHybridPoolInternal>();
+            TargetTypePool = (IEcsHybridPoolInternal)_source.FindPoolInstance(type);
         }
-        private IEcsHybridPoolInternal CreateHybridPool(Type componentType)
+        public void InitPool(IEcsHybridPoolInternal pool)
         {
-            return (IEcsHybridPoolInternal)getHybridPoolMethod.MakeGenericMethod(componentType).Invoke(null, _sourceForReflection);
+            _relatedTypePools.Add(pool);
         }
-
-        public IEcsHybridPoolInternal GetTargetTypePool()
+        public List<IEcsHybridPoolInternal> GetRelatedTypePools()
         {
-            return _targetTypePool;
-        }
-        public List<IEcsHybridPoolInternal> GetPools()
-        {
-            return _relatedPools;
+            return _relatedTypePools;
         }
     }
 }
@@ -533,7 +508,8 @@ namespace DCFApixels.DragonECS.Internal
     internal interface IEcsHybridPoolInternal
     {
         Type ComponentType { get; }
-        void AddRefInternal(int entityID, object component, bool isMain);
+        void AddRefInternal(int entityID, object component, bool isBranchRoot);
+        object GetRaw(int entityID);
         void DelInternal(int entityID, bool isMain);
     }
 }
