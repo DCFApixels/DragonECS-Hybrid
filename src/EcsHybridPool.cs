@@ -199,7 +199,10 @@ namespace DCFApixels.DragonECS
         }
         public void TryDel(int entityID)
         {
-            if (Has(entityID)) Del(entityID);
+            if (Has(entityID))
+            {
+                Del(entityID);
+            }
         }
         public void Copy(int fromEntityID, int toEntityID)
         {
@@ -316,6 +319,7 @@ namespace DCFApixels.DragonECS
         #endregion
     }
 
+    #region EcsHybridPoolExtensions
     public static class EcsHybridPoolExtensions
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
@@ -416,7 +420,9 @@ namespace DCFApixels.DragonECS
         }
         #endregion
     }
+    #endregion
 
+    #region HybridGraph
     internal readonly struct HybridGraphCmp : IEcsWorldComponent<HybridGraphCmp>
     {
         public readonly HybridGraph Graph;
@@ -454,6 +460,7 @@ namespace DCFApixels.DragonECS
         public void InitPool<TComponent>() where TComponent : class, IEcsHybridComponent
         {
             var pool = (IEcsHybridPoolInternal)_world.GetPoolInstance<EcsHybridPool<TComponent>>();
+            var entities = _world.Entities;
 
             foreach (var pair in _branches)
             {
@@ -463,30 +470,32 @@ namespace DCFApixels.DragonECS
                 }
                 if (pair.Key.IsAssignableFrom(typeof(TComponent)))
                 {
-                    foreach (var e in pair.Value.Mask.GetIterator().IterateOnlyInc(_world.Entities))
+                    foreach (var e in pair.Value.Mask.GetIterator().IterateOnlyInc(entities))
                     {
-                        var cmp = pair.Value.TargetTypePool.GetRaw(e);
-                        pool.AddRefInternal(e, cmp, false);
+                        if (pool.Has(e) == false)
+                        {
+                            var cmp = pair.Value.TargetTypePool.GetRaw(e);
+                            pool.AddRefInternal(e, cmp, false);
+                        }
                     }
                 }
             }
         }
     }
-    // ветки создаются только на инстаниируемые типы
     internal class HybridBranch
     {
+        // ветки создаются только на инстаниируемые типы
         private readonly EcsWorld _source;
         public readonly Type Type;
         public readonly EcsMask Mask;
         public IEcsHybridPoolInternal TargetTypePool;
-
         private List<IEcsHybridPoolInternal> _relatedTypePools;
-
 
         public HybridBranch(EcsWorld source, Type type)
         {
+#if DEBUG
             if (!type.IsClass) { throw new ArgumentException(); }
-
+#endif
             _source = source;
             Type = type;
             Mask = EcsMask.New(source).Inc(type).Build();
@@ -502,6 +511,7 @@ namespace DCFApixels.DragonECS
             return _relatedTypePools;
         }
     }
+    #endregion
 }
 namespace DCFApixels.DragonECS.Internal
 {
@@ -509,6 +519,7 @@ namespace DCFApixels.DragonECS.Internal
     {
         Type ComponentType { get; }
         void AddRefInternal(int entityID, object component, bool isBranchRoot);
+        bool Has(int entityID);
         object GetRaw(int entityID);
         void DelInternal(int entityID, bool isMain);
     }
