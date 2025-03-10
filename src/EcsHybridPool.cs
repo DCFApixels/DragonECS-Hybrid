@@ -1,3 +1,4 @@
+using DCFApixels.DragonECS.Core;
 using DCFApixels.DragonECS.Hybrid;
 using DCFApixels.DragonECS.Internal;
 using DCFApixels.DragonECS.PoolsCore;
@@ -238,7 +239,7 @@ namespace DCFApixels.DragonECS
 #if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
-            var span = _source.Where(out SingleAspect<EcsHybridPool<T>> _);
+            var span = _source.Where(out SinglePoolAspect<EcsHybridPool<T>> _);
             foreach (var entityID in span)
             {
                 Del(entityID);
