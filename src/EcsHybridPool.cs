@@ -489,6 +489,7 @@ namespace DCFApixels.DragonECS
         private readonly EcsWorld _source;
         public readonly Type Type;
         public readonly EcsMask Mask;
+        // TODO Тут проблема, ломается если TargetTypePool == null
         public IEcsHybridPoolInternal TargetTypePool;
         private List<IEcsHybridPoolInternal> _relatedTypePools;
 
