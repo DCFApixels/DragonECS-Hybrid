@@ -1,3 +1,6 @@
+#if DISABLE_DEBUG
+#undef DEBUG
+#endif
 using DCFApixels.DragonECS.Core;
 using DCFApixels.DragonECS.Hybrid;
 using DCFApixels.DragonECS.Hybrid.Internal;
@@ -82,13 +85,13 @@ namespace DCFApixels.DragonECS
         #region Methods
         void IEcsHybridPoolInternal.AddRefInternal(int entityID, object componentRaw)
         {
-#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+#if DEBUG || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
             ref int itemIndex = ref _mapping[entityID];
             if(itemIndex > 0)
             {
-#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+#if DEBUG || ENABLE_DRAGONECS_ASSERT_CHEKS
                 if (_items[itemIndex] != componentRaw) { EcsPoolThrowHelper.ThrowAlreadyHasComponent<T>(entityID); }
 #endif
                 return;
@@ -116,7 +119,7 @@ namespace DCFApixels.DragonECS
         }
         public void Add(int entityID, T component)
         {
-#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+#if DEBUG || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
             HybridBranch branch = _graph.GetBranch(component.GetType());
@@ -139,7 +142,7 @@ namespace DCFApixels.DragonECS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public T Get(int entityID)
         {
-#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+#if DEBUG || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (!Has(entityID)) EcsPoolThrowHelper.ThrowNotHaveComponent<T>(entityID);
 #endif
 #if !DISABLE_POOLS_EVENTS
@@ -150,7 +153,7 @@ namespace DCFApixels.DragonECS
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public ref readonly T Read(int entityID)
         {
-#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+#if DEBUG || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (!Has(entityID)) EcsPoolThrowHelper.ThrowNotHaveComponent<T>(entityID);
 #endif
             return ref _items[_mapping[entityID]];
@@ -162,7 +165,7 @@ namespace DCFApixels.DragonECS
         }
         void IEcsHybridPoolInternal.DelInternal(int entityID)
         {
-#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+#if DEBUG || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (!Has(entityID)) EcsPoolThrowHelper.ThrowNotHaveComponent<T>(entityID);
             if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
@@ -201,14 +204,14 @@ namespace DCFApixels.DragonECS
         }
         public void Copy(int fromEntityID, int toEntityID)
         {
-#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+#if DEBUG || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (!Has(fromEntityID)) EcsPoolThrowHelper.ThrowNotHaveComponent<T>(fromEntityID);
 #endif
             Set(toEntityID, Get(fromEntityID));
         }
         public void Copy(int fromEntityID, EcsWorld toWorld, int toEntityID)
         {
-#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+#if DEBUG || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (!Has(fromEntityID)) EcsPoolThrowHelper.ThrowNotHaveComponent<T>(fromEntityID);
 #endif
             toWorld.GetPool<T>().Set(toEntityID, Get(fromEntityID));
@@ -216,7 +219,7 @@ namespace DCFApixels.DragonECS
 
         public void ClearNotAliveComponents()
         {
-#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+#if DEBUG || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
             for (int i = _itemsCount - 1; i >= 0; i--)
@@ -230,7 +233,7 @@ namespace DCFApixels.DragonECS
 
         public void ClearAll()
         {
-#if (DEBUG && !DISABLE_DEBUG) || ENABLE_DRAGONECS_ASSERT_CHEKS
+#if DEBUG || ENABLE_DRAGONECS_ASSERT_CHEKS
             if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
             var span = _source.Where(out SinglePoolAspect<EcsHybridPool<T>> _);
