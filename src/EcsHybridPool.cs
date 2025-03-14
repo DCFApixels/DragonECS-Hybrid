@@ -416,6 +416,20 @@ namespace DCFApixels.DragonECS
         #endregion
     }
     #endregion
+}
+
+namespace DCFApixels.DragonECS.Hybrid.Internal
+{
+    #region IEcsHybridPoolInternal
+    internal interface IEcsHybridPoolInternal
+    {
+        Type ComponentType { get; }
+        void AddRefInternal(int entityID, object component);
+        bool Has(int entityID);
+        object GetRaw(int entityID);
+        void DelInternal(int entityID);
+    }
+    #endregion
 
     #region HybridGraph
     internal readonly struct HybridGraphCmp : IEcsWorldComponent<HybridGraphCmp>
@@ -499,12 +513,8 @@ namespace DCFApixels.DragonECS
     }
     internal class HybridBranch
     {
-        // ветки создаются только на инстаниируемые типы
-        // private readonly EcsWorld _source;
         public readonly Type Type;
         public readonly EcsMask Mask;
-        // TODO Тут проблема, ломается если TargetTypePool == null
-        //public IEcsHybridPoolInternal TargetTypePool;
         private List<IEcsHybridPoolInternal> _relatedTypePools;
 
         public HybridBranch(EcsWorld source, Type type)
@@ -515,8 +525,6 @@ namespace DCFApixels.DragonECS
             Type = type;
             Mask = EcsMask.New(source).Inc(type).Build();
             _relatedTypePools = new List<IEcsHybridPoolInternal>();
-            //_source = source;
-            //TargetTypePool = (IEcsHybridPoolInternal)source.FindPoolInstance(type);
         }
         public void AddRelatedPool(IEcsHybridPoolInternal pool)
         {
@@ -528,15 +536,4 @@ namespace DCFApixels.DragonECS
         }
     }
     #endregion
-}
-namespace DCFApixels.DragonECS.Hybrid.Internal
-{
-    internal interface IEcsHybridPoolInternal
-    {
-        Type ComponentType { get; }
-        void AddRefInternal(int entityID, object component);
-        bool Has(int entityID);
-        object GetRaw(int entityID);
-        void DelInternal(int entityID);
-    }
 }
