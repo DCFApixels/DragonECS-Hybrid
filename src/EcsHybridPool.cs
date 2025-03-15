@@ -89,7 +89,7 @@ namespace DCFApixels.DragonECS
             if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
             ref int itemIndex = ref _mapping[entityID];
-            if(itemIndex > 0)
+            if (itemIndex > 0)
             {
 #if DEBUG || ENABLE_DRAGONECS_ASSERT_CHEKS
                 if (_items[itemIndex] != componentRaw) { EcsPoolThrowHelper.ThrowAlreadyHasComponent<T>(entityID); }
