@@ -18,7 +18,7 @@ namespace DCFApixels.DragonECS
     [MetaColor(MetaColor.DragonRose)]
     [MetaGroup(EcsHybridConsts.PACK_GROUP, EcsConsts.POOLS_GROUP)]
     [MetaDescription(EcsConsts.AUTHOR, "Hybrid component.")]
-    [MetaID("2EBB343694014EC74A02E802E36B8D68")]
+    [MetaID("DragonECS_2EBB343694014EC74A02E802E36B8D68")]
     public interface IEcsHybridComponent
     {
         bool IsAlive { get; }
@@ -30,7 +30,7 @@ namespace DCFApixels.DragonECS
     [MetaColor(MetaColor.DragonRose)]
     [MetaGroup(EcsHybridConsts.PACK_GROUP, EcsConsts.POOLS_GROUP)]
     [MetaDescription(EcsConsts.AUTHOR, "Pool for IEcsHybridComponent components.")]
-    [MetaID("4ACF343694012D56DB73D5FA50DCAA75")]
+    [MetaID("DragonECS_4ACF343694012D56DB73D5FA50DCAA75")]
     [DebuggerDisplay("Count: {Count} ComponentType: {ComponentType}")]
     public sealed class EcsHybridPool<T> : IEcsPoolImplementation<T>, IEcsHybridPool<T>, IEcsHybridPoolInternal, IEnumerable<T> //IEnumerable<T> - IntelliSense hack
         where T : class, IEcsHybridComponent
