@@ -19,7 +19,7 @@ namespace DCFApixels.DragonECS
     [MetaGroup(EcsHybridConsts.PACK_GROUP, EcsConsts.POOLS_GROUP)]
     [MetaDescription(EcsConsts.AUTHOR, "Hybrid component.")]
     [MetaID("DragonECS_2EBB343694014EC74A02E802E36B8D68")]
-    public interface IEcsHybridComponent
+    public interface IEcsHybridComponent : IEcsComponentMember
     {
         bool IsAlive { get; }
         void OnAddToPool(entlong entity);
