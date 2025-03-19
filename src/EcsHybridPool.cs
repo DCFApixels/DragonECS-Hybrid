@@ -315,6 +315,20 @@ namespace DCFApixels.DragonECS
         public static implicit operator EcsHybridPool<T>(ExcludeMarker a) { return a.GetInstance<EcsHybridPool<T>>(); }
         public static implicit operator EcsHybridPool<T>(OptionalMarker a) { return a.GetInstance<EcsHybridPool<T>>(); }
         #endregion
+
+        #region Apply
+        public static void Apply(ref T component, int entityID, short worldID)
+        {
+            var pool = EcsWorld.GetPoolInstance<EcsHybridPool<T>>(worldID);
+            if (pool.Has(entityID)) { return; }
+            pool.Add(entityID, component);
+        }
+        public static void Apply(ref T component, int entityID, EcsHybridPool<T> pool)
+        {
+            if (pool.Has(entityID)) { return; }
+            pool.Add(entityID, component);
+        }
+        #endregion
     }
 
     #region EcsHybridPoolExtensions
