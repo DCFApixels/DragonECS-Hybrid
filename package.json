@@ -8,7 +8,7 @@
     "displayName": "DragonECS-Hybrid",
     "description": "Hybrid extension for DragonECS",
     "unity": "2020.3",
-    "version": "0.3.0",
+    "version": "0.3.1",
     "repository": {
         "type": "git",
         "url": "https://github.com/DCFApixels/DragonECS-Hybrid.git"
