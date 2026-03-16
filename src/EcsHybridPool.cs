@@ -8,7 +8,6 @@ using DCFApixels.DragonECS.PoolsCore;
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
@@ -366,71 +365,6 @@ namespace DCFApixels.DragonECS
         {
             return self.OptionalPool<EcsHybridPool<T>>();
         }
-
-        #region Obsolete
-
-        [Obsolete("Use " + nameof(EcsAspect) + "." + nameof(EcsAspect.Builder) + "." + nameof(Inc) + "<T>()")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EcsHybridPool<T> Include<T>(this EcsAspect.Builder self) where T : class, IEcsHybridComponent
-        {
-            return self.IncludePool<EcsHybridPool<T>>();
-        }
-        [Obsolete("Use " + nameof(EcsAspect) + "." + nameof(EcsAspect.Builder) + "." + nameof(Exc) + "<T>()")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EcsHybridPool<T> Exclude<T>(this EcsAspect.Builder self) where T : class, IEcsHybridComponent
-        {
-            return self.ExcludePool<EcsHybridPool<T>>();
-        }
-        [Obsolete("Use " + nameof(EcsAspect) + "." + nameof(EcsAspect.Builder) + "." + nameof(Opt) + "<T>()")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EcsHybridPool<T> Optional<T>(this EcsAspect.Builder self) where T : class, IEcsHybridComponent
-        {
-            return self.OptionalPool<EcsHybridPool<T>>();
-        }
-
-        //-------------------------------------------------
-
-
-        [Obsolete("Use " + nameof(EcsAspect) + "." + nameof(EcsAspect.Builder) + "." + nameof(GetPool) + "<T>()")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EcsHybridPool<T> GetHybridPool<T>(this EcsWorld self) where T : class, IEcsHybridComponent
-        {
-            return self.GetPoolInstance<EcsHybridPool<T>>();
-        }
-        [Obsolete("Use " + nameof(EcsAspect) + "." + nameof(EcsAspect.Builder) + "." + nameof(GetPoolUnchecked) + "<T>()")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EcsHybridPool<T> GetHybridPoolUnchecked<T>(this EcsWorld self) where T : class, IEcsHybridComponent
-        {
-            return self.GetPoolInstanceUnchecked<EcsHybridPool<T>>();
-        }
-
-        [Obsolete("Use " + nameof(EcsAspect) + "." + nameof(EcsAspect.Builder) + "." + nameof(Inc) + "<T>()")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EcsHybridPool<T> IncludeHybrid<T>(this EcsAspect.Builder self) where T : class, IEcsHybridComponent
-        {
-            return self.IncludePool<EcsHybridPool<T>>();
-        }
-        [Obsolete("Use " + nameof(EcsAspect) + "." + nameof(EcsAspect.Builder) + "." + nameof(Exc) + "<T>()")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EcsHybridPool<T> ExcludeHybrid<T>(this EcsAspect.Builder self) where T : class, IEcsHybridComponent
-        {
-            return self.ExcludePool<EcsHybridPool<T>>();
-        }
-        [Obsolete("Use " + nameof(EcsAspect) + "." + nameof(EcsAspect.Builder) + "." + nameof(Opt) + "<T>()")]
-        [EditorBrowsable(EditorBrowsableState.Never)]
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static EcsHybridPool<T> OptionalHybrid<T>(this EcsAspect.Builder self) where T : class, IEcsHybridComponent
-        {
-            return self.OptionalPool<EcsHybridPool<T>>();
-        }
-        #endregion
     }
     #endregion
 }
