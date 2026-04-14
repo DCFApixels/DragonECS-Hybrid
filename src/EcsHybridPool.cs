@@ -4,7 +4,7 @@
 using DCFApixels.DragonECS.Core;
 using DCFApixels.DragonECS.Hybrid;
 using DCFApixels.DragonECS.Hybrid.Internal;
-using DCFApixels.DragonECS.PoolsCore;
+using DCFApixels.DragonECS.Core;
 using System;
 using System.Collections;
 using System.Collections.Generic;
