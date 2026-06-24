@@ -30,12 +30,11 @@ namespace DCFApixels.DragonECS
     [MetaDescription(EcsConsts.AUTHOR, "Pool for IEcsHybridComponent components.")]
     [MetaID("DragonECS_4ACF343694012D56DB73D5FA50DCAA75")]
     [DebuggerDisplay("Count: {Count} ComponentType: {ComponentType}")]
-    public sealed class EcsHybridPool<T> : IEcsPoolImplementation<T>, IEcsHybridPool<T>, IEcsHybridPoolInternal, IEnumerable<T> //IEnumerable<T> - IntelliSense hack
+    public sealed class EcsHybridPool<T> : IEcsPoolImplementation<T>, IEcsHybridPool<T>, IEcsHybridPoolInternal, IEnumerable<T>, IComponentMask //IEnumerable<T> - IntelliSense hack
         where T : class, IEcsHybridComponent
     {
-        private EcsWorld _source;
-        private int _componentTypeID;
-        private EcsMaskChunck _maskBit;
+        private EcsWorld.ComponentsRegistrar _registrar;
+        private readonly static EcsStaticMask _staticMask = EcsStaticMask.Inc<T>();
 
         private int[] _mapping;// index = entityID / value = itemIndex;/ value = 0 = no entityID
         private T[] _items; //dense
@@ -50,7 +49,6 @@ namespace DCFApixels.DragonECS
 #endif
         private bool _isLocked;
 
-        private EcsWorld.PoolsMediator _mediator;
         private HybridGraph _graph;
 
         #region Properites
@@ -64,7 +62,7 @@ namespace DCFApixels.DragonECS
         }
         public int ComponentTypeID
         {
-            get { return _componentTypeID; }
+            get { return _registrar.ComponentTypeID; }
         }
         public Type ComponentType
         {
@@ -72,7 +70,7 @@ namespace DCFApixels.DragonECS
         }
         public EcsWorld World
         {
-            get { return _source; }
+            get { return _registrar.World; }
         }
         public bool IsReadOnly
         {
@@ -108,7 +106,7 @@ namespace DCFApixels.DragonECS
                     Array.Resize(ref _entities, _items.Length);
                 }
             }
-            _mediator.RegisterComponent(entityID, _componentTypeID, _maskBit);
+            _registrar.RegisterComponent(entityID);
 #if !DRAGONECS_DISABLE_POOLS_EVENTS
             _listeners.InvokeOnAdd(entityID);
 #endif
@@ -126,7 +124,7 @@ namespace DCFApixels.DragonECS
             {
                 pool.AddRefInternal(entityID, component);
             }
-            component.OnAddToPool((_source, entityID));
+            component.OnAddToPool((_registrar.World, entityID));
         }
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public void Set(int entityID, T component)
@@ -177,7 +175,7 @@ namespace DCFApixels.DragonECS
             _mapping[entityID] = 0;
             _entities[itemIndex] = 0;
             _itemsCount--;
-            _mediator.UnregisterComponent(entityID, _componentTypeID, _maskBit);
+            _registrar.UnregisterComponent(entityID);
 #if !DRAGONECS_DISABLE_POOLS_EVENTS
             _listeners.InvokeOnDel(entityID);
 #endif
@@ -191,7 +189,7 @@ namespace DCFApixels.DragonECS
             {
                 pool.DelInternal(entityID);
             }
-            component.OnDelFromPool((_source, entityID));
+            component.OnDelFromPool((_registrar.World, entityID));
         }
         public void TryDel(int entityID)
         {
@@ -234,7 +232,7 @@ namespace DCFApixels.DragonECS
 #if DEBUG || DRAGONECS_STABILITY_MODE
             if (_isLocked) { EcsPoolThrowHelper.ThrowPoolLocked(); }
 #endif
-            var span = _source.Where(out SinglePoolAspect<EcsHybridPool<T>> _);
+            var span = _registrar.World.Where(out SinglePoolAspect<EcsHybridPool<T>> _);
             foreach (var entityID in span)
             {
                 Del(entityID);
@@ -243,12 +241,10 @@ namespace DCFApixels.DragonECS
         #endregion
 
         #region Callbacks
-        void IEcsPoolImplementation.OnInit(EcsWorld world, EcsWorld.PoolsMediator mediator, int componentTypeID)
+        void IEcsPoolImplementation.OnInit(EcsWorld.ComponentsRegistrar registrar)
         {
-            _source = world;
-            _mediator = mediator;
-            _componentTypeID = componentTypeID;
-            _maskBit = EcsMaskChunck.FromID(componentTypeID);
+            _registrar = registrar;
+            var world = _registrar.World;
 
             int capacity = world.Configs.GetWorldConfigOrDefault().PoolComponentsCapacity;
 
@@ -257,7 +253,7 @@ namespace DCFApixels.DragonECS
             _entities = new int[capacity];
             _recycledItems = new int[world.Configs.GetWorldConfigOrDefault().PoolRecycledComponentsCapacity];
 
-            _graph = _source.Get<HybridGraphCmp>().Graph;
+            _graph = world.Get<HybridGraphCmp>().Graph;
             _graph.InitPool(this);
         }
         void IEcsPoolImplementation.OnWorldResize(int newSize)
@@ -273,6 +269,10 @@ namespace DCFApixels.DragonECS
             }
         }
         void IEcsPoolImplementation.OnLockedChanged_Debug(bool locked) { _isLocked = locked; }
+        EcsMask IComponentMask.ToMask(EcsWorld world)
+        {
+            return _staticMask.ToMask(world);
+        }
         #endregion
 
         #region Other
